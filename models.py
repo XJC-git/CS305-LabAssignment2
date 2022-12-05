@@ -110,26 +110,23 @@ class ICMPReply:
     :type code: int
     :param code: The ICMP error code.
 
-    :type bytes_received: int
-    :param bytes_received: The number of bytes received.
+
 
     :type time: float
     :param time: The timestamp of the ICMP reply.
 
     '''
     __slots__ = '_source', '_family', '_id', '_sequence', '_type', \
-                '_code', '_bytes_received', '_time'
+                '_code',  '_time'
 
-    def __init__(self, source, family, id, sequence, type, code,
-            bytes_received, time):
+    def __init__(self, source, id, sequence, type, code, time):
 
         self._source = source
-        self._family = family
+        self._family = 4
         self._id = id
         self._sequence = sequence
         self._type = type
         self._code = code
-        self._bytes_received = bytes_received
         self._time = time
 
     def __repr__(self):
@@ -208,13 +205,7 @@ class ICMPReply:
         '''
         return self._code
 
-    @property
-    def bytes_received(self):
-        '''
-        The number of bytes received.
 
-        '''
-        return self._bytes_received
 
     @property
     def time(self):

@@ -48,7 +48,6 @@ def unique_identifier():
 
 def resolve(name):
     '''
-    TODO:
     Resolve a hostname or FQDN to an IP address. Depending on the name
     specified in parameters, several IP addresses may be returned.
 

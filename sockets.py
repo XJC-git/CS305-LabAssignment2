@@ -1,6 +1,6 @@
-import socket, asyncio
-from struct import pack, unpack
 
+from struct import pack, unpack
+import platform as plt
 from models import ICMPReply, ICMPRequest
 from utils import *
 from time import time
@@ -35,20 +35,25 @@ class ICMPSocket:
         self._privileged = privileged or PLATFORM_WINDOWS
 
         try:
-            self._sock = self._create_socket(
-                socket.SOCK_RAW if self._privileged else
-                socket.SOCK_DGRAM)
+            sys_platform = plt.system().lower()
+            if "windows" in sys_platform or "linux" in sys_platform:
+                self._sock = self._create_socket(
+                    socket.SOCK_RAW)
+            else:
+                self._sock = self._create_socket(
+                    socket.SOCK_DGRAM)
 
             if address:
                 self._sock.bind((address, 0))
-
         except OSError as err:
             if err.errno in (1, 13, 10013):
-                raise SocketPermissionError(privileged)
-
+                try:
+                    self._sock = self._create_socket(
+                        socket.SOCK_DGRAM)
+                except OSError:
+                    raise SocketPermissionError(privileged)
             if err.errno in (-9, 49, 99, 10049, 11001):
                 raise SocketAddressError(address)
-
             raise ICMPSocketError(str(err))
 
     def _create_socket(self, type):
@@ -73,44 +78,82 @@ class ICMPSocket:
             ttl)
 
     def _checksum(self, data):
-        '''
-        TODO:
-        Compute the checksum of an ICMP packet. Checksums are used to
-        verify the integrity of packets.
+        sum = 0
 
-        '''
-        return None
+        # TODO:
+        # Compute the checksum of an ICMP packet. Checksums are used to
+        # verify the integrity of packets.
+        #
+        # :type data: bytes
+        # :param data: The data you are going to send, calculate checksum
+        # according to this.
+        #
+        # :rtype: int
+        # :returns: checksum calculated from data
+        #
+        # Hint: if the length of data is even, add a b'\x00' to the end of data
+        # according to RFC
+
+        return sum
 
     def _check_data(self, data, checksum):
-        '''
-        Verify the given data with checksum of an ICMP packet. Checksums are used to
-        verify the integrity of packets.
 
-        '''
+        # TODO:
+        # Verify the given data with checksum of an ICMP packet. Checksums are used to
+        # verify the integrity of packets.
+        #
+        # :type data: bytes
+        # :param data: The data you received, verify its correctness with checksum
+        #
+        # :type checksum: int
+        # :param checksum: The checksum you received, use it to verify data.
+        #
+        # :rtype: boolean
+        # :returns: whether the data matches the checksum
+        #
+        # Hint: if the length of data is even, add a b'\x00' to the end of data
+        # according to RFC
+
         return False
 
     def _create_packet(self, request: ICMPRequest):
-        """
-        TODO:
-        Build an ICMP packet from an identifier, a sequence number and
-        a payload.
-
-        This method returns the newly created ICMP header concatenated
-        to the payload passed in parameters.
-
-        """
+        id = request.id
+        sequence = request.sequence
+        payload = request.payload
+        checksum = 0
+        # TODO:
+        # Build an ICMP packet from an ICMPRequest, you can get a sequence number and
+        # a payload.
+        #
+        # This method returns the newly created ICMP header concatenated
+        # to the payload passed in parameters.
+        #
+		# tips: the 'checksum' in ICMP header needs to be calculated and updated
+        # :rtype: bytes
+        # :returns: an ICMP header+payload in bytes format
         return None
 
     def _parse_reply(self, packet, source, current_time):
-        '''
-        TODO:
-        Parse an ICMP reply from bytes.
-
-        This method returns an `ICMPReply` object or `None` if the reply
-        cannot be parsed.
-
-        '''
-        return None
+        sequence = 0
+        type = 0
+        code = 0
+        # TODO:
+        # Parse an ICMP reply from bytes.
+        #
+        # Read sequence, type and code from packet 
+        #
+        # :type packet: bytes
+        # :param packet: IP packet with ICMP as its payload
+        #
+        # :rtype: ICMPReply
+        # :returns: an ICMPReply parsed from packet
+        return ICMPReply(
+            source=source,
+            id=id,
+            sequence=sequence,
+            type=type,
+            code=code,
+            time=current_time)
 
     def send(self, request):
         '''
